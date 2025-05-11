@@ -1,0 +1,58 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  DOCKER_TLS_CERTDIR: ""
+  DOCKER_HOST:       "tcp://docker:2375"
+  IMAGE:             "$CI_REGISTRY_IMAGE/airies-dl"
+  TAG:               "$CI_COMMIT_SHORT_SHA"
+
+build:
+  stage: build
+  image: docker:stable
+  services:
+    - name: docker:dind
+      alias: docker
+  tags:
+    - docker
+    - unraid
+  script:
+    - docker info
+    - docker login -u gitlab-ci-token -p "$CI_JOB_TOKEN" "$CI_REGISTRY"
+    - docker build --pull -t "$IMAGE:$TAG" .
+    - docker push  "$IMAGE:$TAG"
+
+.deploy_template: &deploy_template
+  stage: deploy
+  image: alpine
+  tags:
+    - docker
+    - unraid
+  variables:
+    UNRAID_SSH_KEY: $UNRAID_SSH_KEY
+  before_script:
+    - apk add --no-cache openssh-client
+    - mkdir -p ~/.ssh
+    - echo "$UNRAID_SSH_KEY" > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan "$UNRAID_HOST" >> ~/.ssh/known_hosts
+  script:
+    - |
+      ssh root@"$UNRAID_HOST" <<EOF
+      # non‐interactive login on the remote side
+      echo "$CI_JOB_TOKEN" | docker login -u gitlab-ci-token --password-stdin "$CI_REGISTRY"
+      # pull, stop, remove, and re-run your container
+      docker pull "$IMAGE:$TAG"
+      docker stop airies-dl  || true
+      docker rm  airies-dl  || true
+      docker run -d --name airies-dl -l net.unraid.docker.managed=dockerman -l net.unraid.docker.icon='https://dl.airies.net/airies-dl.png' --restart unless-stopped -v $HOST_MOUNT:/wwww:ro -p 8000:8000 "$IMAGE:$TAG" 
+      EOF
+  only:
+    - main
+
+deploy:
+  <<: *deploy_template
+  parallel:
+    matrix:
+      - UNRAID_HOST: "172.20.0.50"
