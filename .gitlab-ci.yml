@@ -46,7 +46,7 @@ build:
       docker pull "$IMAGE:$TAG"
       docker stop airies-dl  || true
       docker rm  airies-dl  || true
-      docker run -d --name airies-dl -l net.unraid.docker.managed=dockerman -l net.unraid.docker.icon='https://dl.airies.net/airies-dl.png' --restart unless-stopped -v $HOST_MOUNT:/wwww:ro -p 8000:8000 "$IMAGE:$TAG" 
+      docker run -d --name airies-dl -l net.unraid.docker.managed=dockerman -l net.unraid.docker.icon='https://dl.airies.net/airies-dl.png' --restart unless-stopped -v $HOST_MOUNT:/www:ro -p 8000:8000 "$IMAGE:$TAG" 
       EOF
   only:
     - main
