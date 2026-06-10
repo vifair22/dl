@@ -28,6 +28,8 @@ RUN chown appuser:appuser /usr/local/bin/file-server
 # 4. Default directories & permissions
 ENV FILE_SERVER_DIR=/www
 ENV PORT=8000
+# Max concurrent transfers. Override at `docker run -e SERVER_THREADS=N`.
+ENV SERVER_THREADS=64
 RUN mkdir -p "$FILE_SERVER_DIR" /var/log/supervisor \
  && chown -R appuser:appuser "$FILE_SERVER_DIR"
 
