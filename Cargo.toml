@@ -7,7 +7,6 @@ edition = "2021"
 opt-level       = "z"        # optimize for size rather than speed
 lto             = "fat"      # full link-time optimisation
 codegen-units   = 1          # best for LTO and dead-code elimination
-panic           = "abort"    # no unwinding tables
 overflow-checks = false      # skip integer-overflow checks
 debug           = false      # strip out any remaining debug info
 
@@ -18,4 +17,3 @@ percent-encoding = "2.3.1"
 html-escape = "0.2.13"
 chrono = "0.4.41"
 threadpool = "1.8.1"
-num_cpus = "1.16.0"

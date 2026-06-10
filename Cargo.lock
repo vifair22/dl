@@ -83,7 +83,6 @@ dependencies = [
  "chrono",
  "html-escape",
  "mime_guess",
- "num_cpus",
  "percent-encoding",
  "threadpool",
  "tiny_http",
